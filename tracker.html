@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <script src="https://appmetrica.yandex.net/counter/4776913.js" async></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background: #f5f5f5; }
+        .msg { text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="msg">
+        <p>Документ открыт</p>
+    </div>
+    <script>
+        // Parse URL params
+        var params = new URLSearchParams(window.location.search);
+        var eventName = params.get('event') || 'infra_open';
+        var doc = params.get('doc') || 'unknown';
+        var ts = params.get('ts') || Math.floor(Date.now() / 1000);
+        var sid = params.get('sid') || Math.floor(Math.random() * 9000000000) + 1000000000;
+
+        // Wait for AppMetrica SDK to load, then send event
+        function waitForAppMetrica(callback, retries) {
+            retries = retries || 0;
+            if (typeof appmetrica !== 'undefined' && appmetrica.reportEvent) {
+                callback();
+            } else if (retries < 50) {
+                setTimeout(function() { waitForAppMetrica(callback, retries + 1); }, 200);
+            }
+        }
+
+        waitForAppMetrica(function() {
+            appmetrica.reportEvent(eventName, {
+                document: doc,
+                timestamp: ts,
+                session_id: sid,
+                source: 'pdf_tracking',
+                referrer: document.referrer || 'direct',
+                user_agent: navigator.userAgent,
+                language: navigator.language,
+                screen: screen.width + 'x' + screen.height
+            });
+            console.log('AppMetrica event sent:', eventName);
+        });
+    </script>
+</body>
+</html>
